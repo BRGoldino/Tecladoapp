@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Teclas & Ébano — Piano no Teclado</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='16' fill='%231B1512'/%3E%3Crect x='18' y='30' width='64' height='40' fill='%23F5F0E6' rx='4'/%3E%3Crect x='30' y='30' width='8' height='24' fill='%232A211D'/%3E%3Crect x='46' y='30' width='8' height='24' fill='%232A211D'/%3E%3Crect x='62' y='30' width='8' height='24' fill='%232A211D'/%3E%3C/svg%3E">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Teclas%20%26%20Eb%C3%A2no%22%2C%22short_name%22%3A%22Teclas%26Ebano%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231B1512%22%2C%22theme_color%22%3A%22%231B1512%22%7D">
+<style>
+  :root{
+    --bg:#1B1512;
+    --bg-soft:#241D19;
+    --panel:#2A211D;
+    --ivory:#F5F0E6;
+    --ebony:#171310;
+    --gold:#E8B44C;
+    --gold-dim:#8a6a2c;
+    --coral:#D64550;
+    --ok:#5FAE73;
+    --text:#F1EAE0;
+    --text-dim:#B8AA9A;
+    --line:#3a2f28;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:transparent;overscroll-behavior:none;}
+  h1,h2,h3{font-family:'Fraunces','Georgia',serif;font-weight:600;margin:0;}
+  .staff-rule{height:1px;background:repeating-linear-gradient(to right, var(--line) 0 6px, transparent 6px 10px);margin:14px 0;}
+  header.top{padding:18px 16px 10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:20;}
+  header.top .brand{display:flex;align-items:baseline;gap:10px;}
+  header.top .brand h1{font-size:22px;color:var(--gold);letter-spacing:.3px;}
+  header.top .brand span.tag{font-size:11px;color:var(--text-dim);border:1px solid var(--line);padding:2px 8px;border-radius:20px;}
+  nav.tabs{display:flex;gap:6px;margin-top:14px;overflow-x:auto;}
+  nav.tabs button{flex:1;min-width:100px;background:none;border:1px solid var(--line);color:var(--text-dim);padding:10px 8px;border-radius:10px 10px 0 0;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;}
+  nav.tabs button.active{background:var(--panel);color:var(--gold);border-color:var(--gold-dim);}
+  main{padding:14px 16px 140px;max-width:820px;margin:0 auto;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;}
+  .card h2{font-size:17px;color:var(--gold);margin-bottom:6px;}
+  .card p{color:var(--text-dim);font-size:14px;line-height:1.55;margin:6px 0;}
+  .pill{display:inline-block;background:var(--bg-soft);border:1px solid var(--line);color:var(--text-dim);font-size:11px;padding:3px 9px;border-radius:20px;margin-right:6px;}
+
+  /* Virtual keyboard */
+  .kb-wrap{position:sticky;bottom:0;left:0;right:0;background:var(--ebony);border-top:2px solid var(--gold-dim);padding:10px 10px 14px;z-index:30;}
+  .kb-info{display:flex;justify-content:space-between;align-items:center;padding:0 4px 8px;font-size:12px;color:var(--text-dim);}
+  .kb-info b{color:var(--gold);}
+  .octave-ctrl{display:flex;gap:6px;align-items:center;}
+  .octave-ctrl button{background:var(--panel);border:1px solid var(--line);color:var(--text);width:30px;height:30px;border-radius:8px;font-size:16px;cursor:pointer;}
+  .keyboard{position:relative;height:150px;display:flex;user-select:none;touch-action:none;}
+  .white-key{position:relative;flex:1;background:linear-gradient(180deg,var(--ivory),#e4ddce);border:1px solid #8a8072;border-radius:0 0 8px 8px;margin-right:2px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;box-shadow:0 3px 0 #b5a98f inset;}
+  .white-key:last-child{margin-right:0;}
+  .white-key.pressed{background:linear-gradient(180deg,var(--gold),#c99632);}
+  .white-key .lbl{font-size:10px;color:#5b5346;font-weight:700;line-height:1.2;text-align:center;}
+  .white-key .lbl .k{display:block;font-size:12px;color:#2b2620;font-family:monospace;}
+  .black-keys{position:absolute;top:0;left:0;right:0;height:92px;display:flex;pointer-events:none;}
+  .black-key{position:absolute;width:8.6%;height:100%;background:linear-gradient(180deg,#2A211D,#0c0907);border-radius:0 0 6px 6px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;pointer-events:auto;box-shadow:0 3px 0 #000 inset;}
+  .black-key.pressed{background:linear-gradient(180deg,var(--coral),#8f2b33);}
+  .black-key .lbl{font-size:9px;color:var(--text-dim);text-align:center;}
+  .black-key .lbl .k{display:block;font-family:monospace;color:#e9c68a;}
+
+  /* Lessons */
+  .lesson-list{display:flex;flex-direction:column;gap:8px;}
+  .lesson-item{display:flex;align-items:center;gap:12px;background:var(--bg-soft);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;}
+  .lesson-item.locked{opacity:.45;cursor:not-allowed;}
+  .lesson-item.done{border-color:var(--ok);}
+  .lesson-item .num{width:34px;height:34px;border-radius:50%;background:var(--panel);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;color:var(--gold);flex-shrink:0;}
+  .lesson-item.done .num{background:var(--ok);color:#0c1a0f;}
+  .lesson-item .info{flex:1;}
+  .lesson-item .info b{font-size:14px;}
+  .lesson-item .info span{display:block;font-size:12px;color:var(--text-dim);margin-top:2px;}
+
+  .exercise-box{text-align:center;padding:20px 10px;}
+  .exercise-box .target{font-family:'Fraunces',serif;font-size:15px;color:var(--text-dim);min-height:20px;margin-bottom:10px;}
+  .exercise-box .big-note{font-size:54px;font-weight:700;color:var(--gold);font-family:'Fraunces',serif;}
+  .exercise-box .keyhint{font-family:monospace;font-size:20px;background:var(--bg-soft);border:1px solid var(--gold-dim);border-radius:10px;padding:6px 14px;display:inline-block;margin-top:8px;}
+  .progress-dots{display:flex;justify-content:center;gap:6px;margin:14px 0;flex-wrap:wrap;}
+  .progress-dots .dot{width:10px;height:10px;border-radius:50%;background:var(--line);}
+  .progress-dots .dot.hit{background:var(--ok);}
+  .progress-dots .dot.current{background:var(--gold);}
+  .feedback{min-height:24px;font-size:14px;font-weight:600;margin-top:6px;}
+  .feedback.ok{color:var(--ok);}
+  .feedback.bad{color:var(--coral);}
+  .btn{background:var(--gold);color:#241a08;border:none;padding:10px 18px;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;}
+  .btn.secondary{background:var(--bg-soft);color:var(--text);border:1px solid var(--line);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+
+  /* Import / MIDI highway */
+  .drop{border:2px dashed var(--line);border-radius:12px;padding:24px;text-align:center;color:var(--text-dim);cursor:pointer;}
+  .drop.over{border-color:var(--gold);color:var(--gold);}
+  .track-meta{font-size:13px;color:var(--text-dim);margin-top:8px;}
+  #highway{position:relative;height:260px;background:var(--ebony);border-radius:12px;overflow:hidden;border:1px solid var(--line);margin-top:12px;}
+  #highway .lane-line{position:absolute;bottom:44px;left:0;right:0;height:2px;background:var(--gold);opacity:.6;}
+  #highway .note-block{position:absolute;height:16px;border-radius:4px;background:var(--coral);opacity:.9;display:flex;align-items:center;justify-content:center;font-size:9px;font-family:monospace;color:#fff;}
+  #highway .note-block.good{background:var(--ok);}
+  .score-line{display:flex;justify-content:space-between;font-size:13px;color:var(--text-dim);margin-top:8px;}
+  input[type=range]{width:100%;}
+  a.link{color:var(--gold);}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <h1>Teclas &amp; Ébano</h1>
+    <span class="tag">piano no seu teclado</span>
+  </div>
+  <nav class="tabs">
+    <button data-tab="lessons" class="active">Aprender</button>
+    <button data-tab="free">Tocar Livre</button>
+    <button data-tab="import">Importar Música</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- LESSONS -->
+  <section id="panel-lessons" class="panel active">
+    <div class="card" id="lesson-intro-card">
+      <h2>Do zero ao avançado</h2>
+      <p>Cada lição só libera a próxima quando você tocar certo. Toque pelo teclado físico do computador (ou pela teclinha na tela). Comece pela lição 1.</p>
+    </div>
+    <div class="card">
+      <h2>Suas lições</h2>
+      <div class="lesson-list" id="lesson-list"></div>
+    </div>
+    <div class="card" id="exercise-card" style="display:none;">
+      <div class="row" style="justify-content:space-between;">
+        <h2 id="exercise-title">—</h2>
+        <button class="btn secondary" id="exit-exercise">Voltar</button>
+      </div>
+      <p id="exercise-desc"></p>
+      <div class="staff-rule"></div>
+      <div class="exercise-box">
+        <div class="target" id="exercise-instruction">Prepare-se…</div>
+        <div class="big-note" id="exercise-bignote">—</div>
+        <div class="keyhint" id="exercise-keyhint">—</div>
+        <div class="progress-dots" id="exercise-dots"></div>
+        <div class="feedback" id="exercise-feedback"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FREE PLAY -->
+  <section id="panel-free" class="panel">
+    <div class="card">
+      <h2>Tocar livre</h2>
+      <p>Use o teclado físico normalmente. As teclas <b>A S D F G H J K L</b> são as teclas brancas (Dó a Ré) e <b>W E T Y U O P</b> são as pretas (sustenidos).</p>
+      <p><b>Sobre o Z / X:</b> eles só deixam o som mais grave ou mais agudo, por gosto pessoal — é opcional. Nas lições e na prática com MIDI o app reconhece o <i>nome</i> da nota, não a oitava, então você nunca precisa trocar de oitava correndo pra acertar um exercício.</p>
+      <div class="row">
+        <span class="pill">Última nota: <b id="last-note">—</b></span>
+        <span class="pill">Oitava base: <b id="free-octave">4</b></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- IMPORT -->
+  <section id="panel-import" class="panel">
+    <div class="card">
+      <h2>Partitura, MIDI e você</h2>
+      <p><b>Precisa de partitura?</b> Sim, ajuda muito a saber quais notas tocar e em que ordem — sem ela você fica "no ouvido", o que funciona mas é mais lento pra aprender.</p>
+      <p><b>Cada instrumento tem uma partitura diferente?</b> Às vezes. Instrumentos "transpositores" (como saxofone e clarinete) têm partituras escritas em tons diferentes do som real. Piano e teclado quase sempre usam a partitura "em Dó" (concert pitch), que é a mais comum — é essa que você deve procurar, buscando por "partitura de piano" ou "sheet music piano/keyboard" do nome da música.</p>
+      <p><b>Dá pra importar uma partitura?</b> Ler imagem de partitura direto é complicado. Mas esse app importa arquivos <b>MIDI (.mid)</b> — que são bem mais fáceis de achar (busque "nome da música MIDI file") e o app já sabe exatamente quais notas tocar e quando, sem você se perder.</p>
+    </div>
+
+    <div class="card">
+      <h2>Importar arquivo MIDI</h2>
+      <div class="drop" id="drop-zone">Toque aqui para escolher um arquivo .mid<br><small>ou arraste no computador</small></div>
+      <input type="file" id="midi-input" accept=".mid,.midi" style="display:none;">
+      <div class="track-meta" id="midi-meta"></div>
+    </div>
+
+    <div class="card" id="playback-card" style="display:none;">
+      <h2 id="song-title">Música importada</h2>
+      <div class="row">
+        <button class="btn" id="btn-practice">Praticar</button>
+        <button class="btn secondary" id="btn-preview">Só ouvir</button>
+        <button class="btn secondary" id="btn-stop">Parar</button>
+      </div>
+      <div style="margin-top:10px;">
+        <label style="font-size:12px;color:var(--text-dim);">Velocidade: <span id="speed-label">100%</span></label>
+        <input type="range" id="speed-range" min="40" max="100" value="100">
+      </div>
+      <div id="highway"><div class="lane-line"></div></div>
+      <div class="score-line"><span>Acertos: <b id="score-hit">0</b></span><span>Erros: <b id="score-miss">0</b></span><span>Tempo: <b id="song-time">0:00</b></span></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Virtual keyboard, always visible -->
+<div class="kb-wrap">
+  <div class="kb-info">
+    <span>Toque as teclas: <b id="mode-hint">A a P</b></span>
+    <div class="octave-ctrl">
+      <button id="oct-down">−</button>
+      <span>Oitava <b id="oct-display">4</b></span>
+      <button id="oct-up">+</button>
+    </div>
+  </div>
+  <div class="keyboard" id="keyboard"></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- AUDIO ENGINE ---------------- */
+const AudioEngine = (function(){
+  let ctx=null;
+  const active={};
+  function ensure(){ if(!ctx){ ctx=new (window.AudioContext||window.webkitAudioContext)(); } if(ctx.state==='suspended'){ ctx.resume(); } return ctx; }
+  function freqFromMidi(m){ return 440*Math.pow(2,(m-69)/12); }
+  function noteOn(id, midi, velocity){
+    ensure();
+    if(active[id]) noteOff(id);
+    const t=ctx.currentTime;
+    const gain=ctx.createGain();
+    gain.gain.setValueAtTime(0,t);
+    gain.gain.linearRampToValueAtTime((velocity||0.8)*0.35, t+0.012);
+    gain.gain.exponentialRampToValueAtTime(0.001*(velocity||0.8)+0.05,(t+0.9));
+    const o1=ctx.createOscillator(); o1.type='triangle'; o1.frequency.value=freqFromMidi(midi);
+    const o2=ctx.createOscillator(); o2.type='sine'; o2.frequency.value=freqFromMidi(midi-12<21?midi:midi); o2.frequency.value=freqFromMidi(midi)*2;
+    const g2=ctx.createGain(); g2.gain.value=0.06;
+    o1.connect(gain); o2.connect(g2); g2.connect(gain);
+    gain.connect(ctx.destination);
+    o1.start(t); o2.start(t);
+    active[id]={o1,o2,gain};
+  }
+  function noteOff(id){
+    const a=active[id]; if(!a) return;
+    const t=ctx.currentTime;
+    try{
+      a.gain.gain.cancelScheduledValues(t);
+      a.gain.gain.setValueAtTime(a.gain.gain.value,t);
+      a.gain.gain.linearRampToValueAtTime(0.0001,t+0.12);
+      a.o1.stop(t+0.15); a.o2.stop(t+0.15);
+    }catch(e){}
+    delete active[id];
+  }
+  return {noteOn,noteOff,ensure};
+})();
+
+/* ---------------- KEY MAP ---------------- */
+// semitone offset from C at the "base octave"
+const KEY_SEMITONE = {
+  KeyA:0, KeyW:1, KeyS:2, KeyE:3, KeyD:4, KeyF:5, KeyT:6,
+  KeyG:7, KeyY:8, KeyH:9, KeyU:10, KeyJ:11,
+  KeyK:12, KeyO:13, KeyL:14, KeyP:15
+};
+const WHITE_ORDER = ['KeyA','KeyS','KeyD','KeyF','KeyG','KeyH','KeyJ','KeyK','KeyL'];
+const BLACK_ORDER = ['KeyW','KeyE',null,'KeyT','KeyY','KeyU',null,'KeyO','KeyP'];
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const NOTE_NAMES_PT = {'C':'Dó','C#':'Dó#','D':'Ré','D#':'Ré#','E':'Mi','F':'Fá','F#':'Fá#','G':'Sol','G#':'Sol#','A':'Lá','A#':'Lá#','B':'Si'};
+
+let baseOctave = 4; // KeyA = C4
+
+function midiForCode(code){
+  const off = KEY_SEMITONE[code];
+  if(off===undefined) return null;
+  return 12*(baseOctave+1) + off; // MIDI 60 = C4
+}
+function midiToName(midi){
+  const pc = ((midi%12)+12)%12;
+  const oct = Math.floor(midi/12)-1;
+  return {pc:NOTE_NAMES[pc], oct, full:NOTE_NAMES[pc]+oct, pt:NOTE_NAMES_PT[NOTE_NAMES[pc]]};
+}
+function pcName(pcIndex){ return NOTE_NAMES[((pcIndex%12)+12)%12]; }
+
+/* ---------------- VIRTUAL KEYBOARD RENDER ---------------- */
+const kbEl = document.getElementById('keyboard');
+function buildKeyboard(){
+  kbEl.innerHTML='';
+  const whiteRow=document.createElement('div');
+  whiteRow.style.cssText='display:flex;width:100%;height:100%;';
+  WHITE_ORDER.forEach(code=>{
+    const midi = midiForCode(code);
+    const n = midiToName(midi);
+    const key=document.createElement('div');
+    key.className='white-key'; key.dataset.code=code;
+    key.innerHTML = `<div class="lbl">${n.pt}<span class="k">${code.replace('Key','')}</span></div>`;
+    whiteRow.appendChild(key);
+  });
+  kbEl.appendChild(whiteRow);
+  const blackRow=document.createElement('div');
+  blackRow.className='black-keys';
+  BLACK_ORDER.forEach((code,i)=>{
+    if(!code) return;
+    const midi=midiForCode(code);
+    const n=midiToName(midi);
+    const key=document.createElement('div');
+    key.className='black-key'; key.dataset.code=code;
+    key.style.left = ((i+1)*(100/9) - 4.3) + '%';
+    key.innerHTML = `<div class="lbl">${n.pt}<span class="k">${code.replace('Key','')}</span></div>`;
+    blackRow.appendChild(key);
+  });
+  kbEl.appendChild(blackRow);
+  document.getElementById('oct-display').textContent=baseOctave;
+  document.getElementById('free-octave').textContent=baseOctave;
+}
+buildKeyboard();
+
+function visualPress(code,on){
+  const el=kbEl.querySelector(`[data-code="${code}"]`);
+  if(el) el.classList.toggle('pressed',on);
+}
+
+/* ---------------- INPUT HANDLING ---------------- */
+const heldCodes = new Set();
+let noteHandler = null; // callback(midi, on, code)
+
+function handleDown(code){
+  if(code==='KeyZ'){ if(baseOctave>1){baseOctave--; buildKeyboard(); refreshHeld();} return; }
+  if(code==='KeyX'){ if(baseOctave<7){baseOctave++; buildKeyboard(); refreshHeld();} return; }
+  if(KEY_SEMITONE[code]===undefined) return;
+  if(heldCodes.has(code)) return;
+  heldCodes.add(code);
+  const midi=midiForCode(code);
+  AudioEngine.noteOn(code, midi, 0.85);
+  visualPress(code,true);
+  const n=midiToName(midi);
+  const lastNoteEl=document.getElementById('last-note');
+  if(lastNoteEl) lastNoteEl.textContent = n.pt+' ('+n.full+')';
+  if(noteHandler) noteHandler(midi, true, code);
+}
+function handleUp(code){
+  if(!heldCodes.has(code)) return;
+  heldCodes.delete(code);
+  AudioEngine.noteOff(code);
+  visualPress(code,false);
+  if(noteHandler) noteHandler(midiForCode(code), false, code);
+}
+function refreshHeld(){ /* octave changed mid-press: just leave sounding notes as-is */ }
+
+document.addEventListener('keydown', e=>{
+  if(e.repeat) return;
+  if(document.activeElement && ['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+  handleDown(e.code);
+});
+document.addEventListener('keyup', e=>{ handleUp(e.code); });
+
+// touch/mouse support on virtual keys
+function bindPointer(el){
+  const code=el.dataset.code;
+  const start=(ev)=>{ ev.preventDefault(); handleDown(code); };
+  const end=(ev)=>{ ev.preventDefault(); handleUp(code); };
+  el.addEventListener('mousedown',start); el.addEventListener('mouseup',end); el.addEventListener('mouseleave',end);
+  el.addEventListener('touchstart',start,{passive:false}); el.addEventListener('touchend',end,{passive:false});
+}
+function bindAllKeys(){ kbEl.querySelectorAll('[data-code]').forEach(bindPointer); }
+bindAllKeys();
+document.getElementById('oct-down').onclick=()=>{ if(baseOctave>1){baseOctave--; buildKeyboard(); bindAllKeys();} };
+document.getElementById('oct-up').onclick=()=>{ if(baseOctave<7){baseOctave++; buildKeyboard(); bindAllKeys();} };
+
+/* re-bind pointer events every time keyboard rebuilt */
+const _origBuild = buildKeyboard;
+buildKeyboard = function(){ _origBuild(); bindAllKeys(); };
+
+/* ---------------- TABS ---------------- */
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  };
+});
+
+/* ---------------- LESSONS ---------------- */
+// sequence entries: pitch-class name (octave-agnostic) unless exact:true with octave
+function seqPC(...names){ return names.map(n=>({pc:n})); }
+function chordPC(...names){ return {chord:names}; }
+
+const LESSONS = [
+  { id:'l0', title:'Boas-vindas ao teclado', desc:'Antes de tocar, veja como as teclas do computador viram notas musicais.',
+    type:'info', info:'Olhe a teclinha na parte de baixo da tela. As teclas <b>A S D F G H J K L</b> tocam as notas brancas, na ordem Dó Ré Mi Fá Sol Lá Si Dó Ré. As teclas <b>W E T Y U O P</b>, na fileira de cima, tocam as notas pretas (sustenidos), do jeito que ficam no piano de verdade — em cima do vão entre duas teclas brancas. Existem também as teclas Z e X, que só deixam o som mais grave ou mais agudo por gosto — nunca é obrigatório usá-las pra acertar um exercício.' },
+  { id:'l1', title:'Dó, Ré e Mi', desc:'Toque as três primeiras notas quando forem pedidas.',
+    type:'sequence', seq: seqPC('C','D','E','C','E','D') },
+  { id:'l2', title:'Escala de Dó Maior', desc:'A escala mais importante: Dó Ré Mi Fá Sol Lá Si Dó, subindo e descendo.',
+    type:'sequence', seq: seqPC('C','D','E','F','G','A','B','C','B','A','G','F','E','D','C') },
+  { id:'l3', title:'Teclas pretas (sustenidos)', desc:'Agora as notas #: Dó#, Ré#, Fá#, Sol#, Lá#.',
+    type:'sequence', seq: seqPC('C#','D#','F#','G#','A#') },
+  { id:'l4', title:'Acorde de Dó Maior', desc:'Um acorde é tocar várias notas juntas. Aperte e segure Dó, Mi e Sol ao mesmo tempo.',
+    type:'chord', chords:[ ['C','E','G'] ] },
+  { id:'l5', title:'Mais acordes maiores', desc:'Fá Maior (Fá-Lá-Dó) e Sol Maior (Sol-Si-Ré), um de cada vez.',
+    type:'chord', chords:[ ['F','A','C'], ['G','B','D'] ] },
+  { id:'l6', title:'Parabéns pra Você', desc:'Sua primeira música completa! Vai nota por nota.',
+    type:'sequence', seq: seqPC('C','C','D','C','F','E','C','C','D','C','G','F') },
+  { id:'l7', title:'Ode à Alegria (Hino da Alegria)', desc:'Um tema clássico, bem mais longo.',
+    type:'sequence', seq: seqPC('E','E','F','G','G','F','E','D','C','C','D','E','E','D','D') },
+  { id:'l8', title:'Ler partitura, o básico', desc:'Entenda como a partitura se conecta com o que você já aprendeu.',
+    type:'info', info:'Numa partitura de piano, cada nota escrita no papel corresponde a uma tecla. Quanto mais alta a nota está desenhada no pentagrama (as 5 linhas), mais aguda ela é (mais para a direita/mais alta a oitava). Como você já decorou a posição de Dó Ré Mi Fá Sol Lá Si nas teclas A S D F G H J, ler uma partitura vira só reconhecer o nome da nota no papel e procurar essa letra no teclado. O próximo passo é ir para a aba <b>Importar Música</b> e usar um arquivo MIDI: o app mostra as notas caindo e toca com você, igual um "Guitar Hero" de piano.' },
+  { id:'l9', title:'Avançado: toque suas músicas', desc:'Vá para a aba Importar Música, mande um arquivo .mid e pratique no seu próprio ritmo.',
+    type:'info', info:'Procure na internet por "nome da música" + "MIDI file" ou "midi download". Importe o arquivo na aba Importar Música. O app separa as notas, mostra qual tecla apertar e quando, e ainda deixa você desacelerar a velocidade para praticar com calma antes de tocar no tempo certo.' },
+];
+
+const PROGRESS_KEY='pianoTecladoProgress_v1';
+function loadProgress(){
+  try{ return JSON.parse(localStorage.getItem(PROGRESS_KEY)) || {unlocked:1, done:{}}; }
+  catch(e){ return {unlocked:1, done:{}}; }
+}
+function saveProgress(p){ localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); }
+let progress = loadProgress();
+
+const lessonListEl = document.getElementById('lesson-list');
+function renderLessonList(){
+  lessonListEl.innerHTML='';
+  LESSONS.forEach((les, idx)=>{
+    const unlocked = idx <= progress.unlocked;
+    const done = !!progress.done[les.id];
+    const item=document.createElement('div');
+    item.className='lesson-item'+(unlocked?'':' locked')+(done?' done':'');
+    item.innerHTML = `<div class="num">${done?'✓':(idx+1)}</div>
+      <div class="info"><b>${les.title}</b><span>${les.desc}</span></div>`;
+    if(unlocked) item.onclick=()=>openLesson(idx);
+    lessonListEl.appendChild(item);
+  });
+}
+renderLessonList();
+
+const exCard=document.getElementById('exercise-card');
+const introCard=document.getElementById('lesson-intro-card');
+let currentLesson=null, cursor=0, exState=null;
+
+function openLesson(idx){
+  currentLesson=idx; cursor=0;
+  const les=LESSONS[idx];
+  exCard.style.display='block';
+  document.getElementById('exercise-title').textContent=les.title;
+  document.getElementById('exercise-desc').textContent=les.desc;
+  document.getElementById('exercise-feedback').textContent='';
+  document.getElementById('exercise-feedback').className='feedback';
+  const dots=document.getElementById('exercise-dots'); dots.innerHTML='';
+
+  if(les.type==='info'){
+    document.getElementById('exercise-bignote').textContent='📖';
+    document.getElementById('exercise-instruction').innerHTML=les.info;
+    document.getElementById('exercise-keyhint').textContent='Toque para explorar livremente';
+    noteHandler=null;
+    // mark complete immediately (info lessons just need reading)
+    completeLesson(les.id);
+  } else if(les.type==='sequence'){
+    les.seq.forEach(()=>{ const d=document.createElement('div'); d.className='dot'; dots.appendChild(d); });
+    showSeqStep(les);
+    noteHandler=(midi,on)=>{ if(!on) return; checkSeqNote(les, midiToName(midi).pc); };
+  } else if(les.type==='chord'){
+    les.chords.forEach(()=>{ const d=document.createElement('div'); d.className='dot'; dots.appendChild(d); });
+    exState={held:new Set()};
+    showChordStep(les);
+    noteHandler=(midi,on)=>{
+      const pc=midiToName(midi).pc;
+      if(on) exState.held.add(pc); else exState.held.delete(pc);
+      checkChord(les);
+    };
+  }
+  document.getElementById('lesson-list').parentElement.style.display='none';
+  introCard.style.display='none';
+}
+
+function exitExercise(){
+  exCard.style.display='none';
+  document.getElementById('lesson-list').parentElement.style.display='block';
+  introCard.style.display='block';
+  noteHandler=null;
+  renderLessonList();
+}
+document.getElementById('exit-exercise').onclick=exitExercise;
+
+function showSeqStep(les){
+  const target=les.seq[cursor];
+  document.getElementById('exercise-instruction').textContent=`Passo ${cursor+1} de ${les.seq.length} — toque:`;
+  document.getElementById('exercise-bignote').textContent=NOTE_NAMES_PT[target.pc];
+  document.getElementById('exercise-keyhint').textContent=keyHintFor(target.pc);
+  updateDots(les.seq.length);
+}
+function keyHintFor(pc){
+  for(const code in KEY_SEMITONE){
+    const midi=12*(baseOctave+1)+KEY_SEMITONE[code];
+    if(midiToName(midi).pc===pc) return code.replace('Key','');
+  }
+  return '?';
+}
+function updateDots(total){
+  const dots=document.getElementById('exercise-dots').children;
+  for(let i=0;i<total;i++){
+    dots[i].classList.toggle('hit', i<cursor);
+    dots[i].classList.toggle('current', i===cursor);
+  }
+}
+function checkSeqNote(les, pc){
+  const target=les.seq[cursor];
+  const fb=document.getElementById('exercise-feedback');
+  if(pc===target.pc){
+    cursor++;
+    fb.textContent='Certo!'; fb.className='feedback ok';
+    if(cursor>=les.seq.length){
+      fb.textContent='Lição concluída! 🎉';
+      completeLesson(les.id);
+      setTimeout(exitExercise, 1400);
+    } else {
+      showSeqStep(les);
+    }
+  } else {
+    fb.textContent='Essa não — tente de novo.'; fb.className='feedback bad';
+  }
+}
+function showChordStep(les){
+  const chord=les.chords[cursor];
+  document.getElementById('exercise-instruction').textContent=`Acorde ${cursor+1} de ${les.chords.length} — segure juntas:`;
+  document.getElementById('exercise-bignote').textContent=chord.map(c=>NOTE_NAMES_PT[c]).join(' + ');
+  document.getElementById('exercise-keyhint').textContent=chord.map(keyHintFor).join(' + ');
+  updateDots(les.chords.length);
+  exState.held.clear();
+}
+function checkChord(les){
+  const chord=les.chords[cursor];
+  const fb=document.getElementById('exercise-feedback');
+  const ok = chord.every(pc=>exState.held.has(pc)) && exState.held.size===chord.length;
+  if(ok){
+    cursor++;
+    fb.textContent='Acorde certo!'; fb.className='feedback ok';
+    if(cursor>=les.chords.length){
+      fb.textContent='Lição concluída! 🎉';
+      completeLesson(les.id);
+      setTimeout(exitExercise, 1400);
+    } else {
+      showChordStep(les);
+    }
+  }
+}
+function completeLesson(id){
+  progress.done[id]=true;
+  const idx=LESSONS.findIndex(l=>l.id===id);
+  if(idx===progress.unlocked && progress.unlocked<LESSONS.length-1) progress.unlocked=idx+1;
+  saveProgress(progress);
+}
+
+/* ---------------- MIDI IMPORT & PRACTICE ---------------- */
+const dropZone=document.getElementById('drop-zone');
+const midiInput=document.getElementById('midi-input');
+dropZone.onclick=()=>midiInput.click();
+dropZone.addEventListener('dragover',e=>{e.preventDefault(); dropZone.classList.add('over');});
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('over'));
+dropZone.addEventListener('drop',e=>{
+  e.preventDefault(); dropZone.classList.remove('over');
+  if(e.dataTransfer.files[0]) loadMidiFile(e.dataTransfer.files[0]);
+});
+midiInput.onchange=()=>{ if(midiInput.files[0]) loadMidiFile(midiInput.files[0]); };
+
+function readVarLen(view, pos){
+  let value=0, byte;
+  do{ byte=view.getUint8(pos.p); pos.p++; value=(value<<7)|(byte&0x7f); }while(byte&0x80);
+  return value;
+}
+
+function parseMidi(buffer){
+  const view=new DataView(buffer);
+  let pos={p:0};
+  function str(len){ let s=''; for(let i=0;i<len;i++){ s+=String.fromCharCode(view.getUint8(pos.p+i)); } pos.p+=len; return s; }
+  if(str(4)!=='MThd') throw new Error('Arquivo MIDI inválido');
+  const hlen=view.getUint32(pos.p); pos.p+=4;
+  const format=view.getUint16(pos.p); pos.p+=2;
+  const ntrks=view.getUint16(pos.p); pos.p+=2;
+  const division=view.getUint16(pos.p); pos.p+=2;
+  pos.p += (hlen-6);
+  const ppq = (division&0x8000)?480:division;
+
+  const merged=[]; // {tick, type, note, vel, meta}
+  for(let t=0;t<ntrks;t++){
+    if(str(4)!=='MTrk') throw new Error('Track inválida');
+    const tlen=view.getUint32(pos.p); pos.p+=4;
+    const end=pos.p+tlen;
+    let tick=0, runningStatus=0;
+    while(pos.p<end){
+      const delta=readVarLen(view,pos);
+      tick+=delta;
+      let statusByte=view.getUint8(pos.p);
+      if(statusByte<0x80){ statusByte=runningStatus; } else { pos.p++; runningStatus=statusByte; }
+      if(statusByte===0xFF){
+        const metaType=view.getUint8(pos.p); pos.p++;
+        const len=readVarLen(view,pos);
+        if(metaType===0x51){ // tempo
+          const mpqn=(view.getUint8(pos.p)<<16)|(view.getUint8(pos.p+1)<<8)|view.getUint8(pos.p+2);
+          merged.push({tick, type:'tempo', mpqn});
+        }
+        pos.p+=len;
+      } else if(statusByte===0xF0||statusByte===0xF7){
+        const len=readVarLen(view,pos); pos.p+=len;
+      } else {
+        const hi=statusByte&0xF0;
+        if(hi===0x90){ const note=view.getUint8(pos.p); const vel=view.getUint8(pos.p+1); pos.p+=2; merged.push({tick,type:vel>0?'on':'off',note,vel}); }
+        else if(hi===0x80){ const note=view.getUint8(pos.p); pos.p+=2; merged.push({tick,type:'off',note}); }
+        else if(hi===0xA0||hi===0xB0||hi===0xE0){ pos.p+=2; }
+        else if(hi===0xC0||hi===0xD0){ pos.p+=1; }
+      }
+    }
+    pos.p=end;
+  }
+  merged.sort((a,b)=>a.tick-b.tick);
+
+  // convert ticks -> seconds
+  let curTempo=500000, lastTick=0, lastTime=0;
+  const openNotes={};
+  const notes=[];
+  merged.forEach(ev=>{
+    const dt=ev.tick-lastTick;
+    lastTime += dt*curTempo/1e6/ppq;
+    lastTick = ev.tick;
+    if(ev.type==='tempo'){ curTempo=ev.mpqn; return; }
+    if(ev.type==='on'){ openNotes[ev.note]={start:lastTime, vel:ev.vel}; }
+    else if(ev.type==='off'){
+      const o=openNotes[ev.note];
+      if(o){ notes.push({midi:ev.note, start:o.start, end:lastTime, vel:o.vel}); delete openNotes[ev.note]; }
+    }
+  });
+  notes.sort((a,b)=>a.start-b.start);
+  return {notes, duration: notes.reduce((m,n)=>Math.max(m,n.end),0)};
+}
+
+let currentSong=null;
+function loadMidiFile(file){
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      currentSong=parseMidi(reader.result);
+      document.getElementById('midi-meta').textContent = `"${file.name}" carregado — ${currentSong.notes.length} notas, ${Math.round(currentSong.duration)}s.`;
+      document.getElementById('song-title').textContent = file.name.replace(/\.(mid|midi)$/i,'');
+      document.getElementById('playback-card').style.display='block';
+      buildHighwayBlocks();
+    }catch(err){
+      document.getElementById('midi-meta').textContent = 'Não consegui ler esse arquivo. Confirme que é um .mid válido.';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+const highwayEl=document.getElementById('highway');
+function buildHighwayBlocks(){
+  highwayEl.querySelectorAll('.note-block').forEach(n=>n.remove());
+  if(!currentSong) return;
+  const minMidi=Math.min(...currentSong.notes.map(n=>n.midi));
+  const maxMidi=Math.max(...currentSong.notes.map(n=>n.midi));
+  const range=Math.max(12,maxMidi-minMidi);
+  currentSong.notes.forEach((n,i)=>{
+    const el=document.createElement('div');
+    el.className='note-block';
+    el.dataset.idx=i;
+    el.style.left = (5 + 90*((n.midi-minMidi)/range)) + '%';
+    el.style.width='7%';
+    el.textContent=midiToName(n.midi).pc;
+    highwayEl.appendChild(el);
+  });
+  window._highwayRange={min:minMidi,range};
+}
+
+let playState=null;
+function stopPlayback(){
+  if(playState){ cancelAnimationFrame(playState.raf); }
+  playState=null;
+  document.querySelectorAll('.note-block').forEach(el=>el.classList.remove('good'));
+}
+function startPlayback(practiceMode){
+  if(!currentSong) return;
+  stopPlayback();
+  const speed = document.getElementById('speed-range').value/100;
+  const startTime = performance.now();
+  const scheduled = currentSong.notes.map(n=>({...n, played:false}));
+  let hits=0, misses=0;
+  document.getElementById('score-hit').textContent='0';
+  document.getElementById('score-miss').textContent='0';
+  playState={raf:null};
+  function frame(now){
+    const t = (now-startTime)/1000*speed;
+    document.getElementById('song-time').textContent = Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0');
+    const HEIGHT=216, SPEEDPX=60; // px per second falling
+    scheduled.forEach((n,i)=>{
+      const el=highwayEl.querySelector(`.note-block[data-idx="${i}"]`);
+      if(!el) return;
+      const y = HEIGHT - (n.start-t)*SPEEDPX;
+      el.style.top = y+'px';
+      if(!practiceMode && !n.played && t>=n.start && t<=n.end+0.05){
+        n.played=true; AudioEngine.noteOn('song'+i, n.midi, (n.vel||90)/127); setTimeout(()=>AudioEngine.noteOff('song'+i), Math.max(80,(n.end-n.start)*1000));
+      }
+      if(practiceMode && !n.played && t>n.end+0.25){ n.played=true; misses++; document.getElementById('score-miss').textContent=misses; }
+    });
+    if(t<currentSong.duration+1){ playState.raf=requestAnimationFrame(frame); }
+    else { stopPlayback(); }
+  }
+  playState.raf=requestAnimationFrame(frame);
+
+  if(practiceMode){
+    noteHandler=(midi,on)=>{
+      if(!on) return;
+      const pc=midiToName(midi).pc;
+      const cand = scheduled.find(n=>!n.played && midiToName(n.midi).pc===pc && Math.abs((performance.now()-startTime)/1000*speed - n.start)<0.35);
+      if(cand){
+        cand.played=true; hits++; document.getElementById('score-hit').textContent=hits;
+        const idx=scheduled.indexOf(cand);
+        const el=highwayEl.querySelector(`.note-block[data-idx="${idx}"]`);
+        if(el) el.classList.add('good');
+      }
+    };
+  } else {
+    noteHandler=null;
+  }
+}
+document.getElementById('btn-practice').onclick=()=>startPlayback(true);
+document.getElementById('btn-preview').onclick=()=>startPlayback(false);
+document.getElementById('btn-stop').onclick=()=>{ stopPlayback(); noteHandler=null; };
+document.getElementById('speed-range').oninput=function(){ document.getElementById('speed-label').textContent=this.value+'%'; };
+
+/* ---------------- SERVICE WORKER (offline) ---------------- */
+if('serviceWorker' in navigator){
+  const swCode = `
+    const CACHE='teclas-ebano-v1';
+    self.addEventListener('install', e=>{ self.skipWaiting(); });
+    self.addEventListener('activate', e=>{ self.clients.claim(); });
+    self.addEventListener('fetch', e=>{
+      e.respondWith(
+        caches.open(CACHE).then(cache=>cache.match(e.request).then(resp=>{
+          const fetchPromise = fetch(e.request).then(networkResp=>{
+            cache.put(e.request, networkResp.clone());
+            return networkResp;
+          }).catch(()=>resp);
+          return resp || fetchPromise;
+        }))
+      );
+    });
+  `;
+  const blob=new Blob([swCode], {type:'application/javascript'});
+  const swUrl=URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
+}
+
+})();
+</script>
+</body>
+</html>
